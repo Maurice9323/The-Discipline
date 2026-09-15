@@ -1,4 +1,4 @@
-const CACHE_NAME = 'the-discipline-v1';
+const CACHE_NAME = 'the-discipline-v2';
 const ASSETS = [
   'index.html',
   'manifest.json',
@@ -32,10 +32,13 @@ self.addEventListener('fetch', function (event) {
     caches.match(event.request).then(function (cached) {
       var networkFetch = fetch(event.request)
         .then(function (response) {
-          return caches.open(CACHE_NAME).then(function (cache) {
-            cache.put(event.request, response.clone());
-            return response;
-          });
+          if (response && response.ok) {
+            var copy = response.clone();
+            caches.open(CACHE_NAME).then(function (cache) {
+              cache.put(event.request, copy);
+            });
+          }
+          return response;
         })
         .catch(function () { return cached; });
       return cached || networkFetch;
